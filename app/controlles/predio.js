@@ -8,8 +8,12 @@ cloudinary.config({
 });
 
 const getItems = async (req, res) => {
-  const [rows] = await pool.query(`SELECT * FROM predio`);
-  res.status(200).send(rows);
+  try {
+    const [rows] = await pool.query(`SELECT * FROM predio`);
+    res.send(rows);
+  } catch (error) {
+    console.log(error);
+  }
 };
 const getItem = async (req, res) => {
   const id = req.params.id;

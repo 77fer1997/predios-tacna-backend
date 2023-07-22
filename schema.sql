@@ -20,8 +20,8 @@ CREATE TABLE predio(
 )
 CREATE TABLE predio_images(
     id INT AUTO_INCREMENT PRIMARY KEY,
-    url VARCHAR(255)
-    descripcion varchar(255)
+    url VARCHAR(255),
+    descripcion varchar(255),
     predio_id INT NOT NULL,
     FOREIGN KEY (predio_id) REFERENCES predio(id) ON DELETE CASCADE
 )
