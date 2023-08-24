@@ -3,7 +3,6 @@ const router = express.Router();
 const fs = require("fs");
 
 const pathRouter = `${__dirname}`;
-console.log(pathRouter);
 const removeExtension = (fileName) => {
   return fileName.split(".").shift();
 };
@@ -12,7 +11,6 @@ fs.readdirSync(pathRouter).filter((file) => {
   const skip = ["index"].includes(fileWithOutExt);
   if (!skip) {
     router.use(`/${fileWithOutExt}`, require(`./${fileWithOutExt}`)); // localhost/user
-    console.log("CARGAR RUTA ---->", fileWithOutExt);
   }
 });
 router.get("*", (req, res) => {

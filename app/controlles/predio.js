@@ -1,88 +1,188 @@
 require("dotenv").config();
+const { cloudinary, options } = require("../../config/cloudinary");
 const pool = require("../../config/mysql");
-const cloudinary = require("cloudinary").v2;
-cloudinary.config({
-  cloud_name: "dxgh1api3",
-  api_key: "866512533594536",
-  api_secret: "GYcJbyWsEZPp9BwPDQeZi2ZMH2Y",
-});
-
-const getItems = async (req, res) => {
+const getPredios = async (req, res) => {
   try {
     const [rows] = await pool.query(`SELECT * FROM predio`);
+    console.log(rows);
+    res.status(200);
     res.send(rows);
   } catch (error) {
-    console.log(error);
+    res.status(404);
+    res.send({
+      error,
+    });
   }
 };
-const getItem = async (req, res) => {
-  const id = req.params.id;
-  const [rows] = await pool.query(`SELECT * FROM predio WHERE id = ?`, [id]);
-  res.status(200).send(rows[0]);
-};
-const createItem = async (req, res) => {
-  const { name, lat, lon, administrador_id } = req.body;
-  const [rows] = await pool.query(
-    `INSERT INTO predio (name, lat, lon, administrador_id) VALUES (?, ?, ?, ?)`,
-    [name, lat, lon, administrador_id]
-  );
-  console.log(rows);
-  res.sendStatus(201).send(rows.insertId);
-};
-const updateItem = async (req, res) => {
-  const id = req.params.id;
-  const { name, lat, lon } = req.body;
-  const [rows] = await pool.query(
-    `UPDATE predio SET name=?, lat=?, lon=? WHERE id=?`,
-    [name, lat, lon, id]
-  );
-  res.sendStatus(201);
-};
-const deleteItem = async (req, res) => {
-  const id = req.params.id;
-  const [rows] = await pool.query(`DELETE FROM predio WHERE id=?`, [id]);
-  res.status(200).send(rows[0]);
-};
-const options = {
-  use_filename: true,
-  unique_filename: false,
-  overwrite: true,
-};
-
-const uploadImage = async (req, res) => {
-  const { id } = req.params;
-  const { descripcion } = req.body;
-  const { filename } = req.file;
-  const image = `${__dirname}/../storage/${filename}`;
-  console.log(req.body);
+const getPrediosWithImages = async (req, res) => {
   try {
-    const result = await cloudinary.uploader.upload(image, options);
-    const { secure_url } = result;
-    const [rows] = await pool.query(
-      `INSERT INTO predio_images (url, descripcion, predio_id) VALUES (?, ?, ?)`,
-      [secure_url, descripcion, id]
+    const [rows] = await pool.query(`SELECT * FROM predio`);
+    const [rows_predios_images] = await pool.query(
+      `SELECT * FROM predio_images;`
     );
-    res.send(rows);
+    /**
+     * Traer las imagenes de predio_images y colocarlas en los predios
+     */
+    let array = [...rows];
+    rows.forEach((predio, index) => {
+      rows_predios_images.forEach((predioImage) => {
+        if (predio.id === predioImage.predio_id) {
+          console.log(predio.id, predioImage.predio_id);
+          if (array[index].imagen) {
+            array[index].imagen = [...array[index].imagen, predioImage.url];
+          } else {
+            array[index].imagen = [predioImage.url];
+          }
+
+          /* console.log(array[index].id); */
+        }
+      });
+    });
+
+    res.status(200);
+    res.send(array);
   } catch (error) {
-    console.log(error);
+    res.status(404);
+    res.send({
+      error,
+    });
   }
 };
-const uploadVideos = async (req, res) => {
+const getPredioWithImages = async (req, res) => {
   const { id } = req.params;
-  const { url } = req.body;
-  const [rows] = await pool.query(
-    `INSERT INTO predio_url_videos (url, predio_id) VALUES ( ?, ?)`,
-    [url, id]
-  );
-  res.send(rows);
+  try {
+    const [rows] = await pool.query(`SELECT * FROM predio WHERE id= ?`, [id]);
+    const [rows_predio_images] = await pool.query(
+      `SELECT * FROM predio_images WHERE predio_id=?`,
+      [id]
+    );
+    const predioWithImages = rows_predio_images.map((predioImage) => {
+      return predioImage.url;
+    });
+    res.status(200);
+    res.send({
+      ...rows[0],
+      images: predioWithImages,
+    });
+  } catch (error) {
+    res.status(404);
+    res.send({
+      error,
+    });
+  }
+};
+const getPredio = async (req, res) => {
+  try {
+    const id = req.params.id;
+    const [rows] = await pool.query(`SELECT * FROM predio WHERE id = ?`, [id]);
+    res.status(200);
+    res.send(rows[0]);
+  } catch (error) {
+    res.status(404);
+    res.send({
+      error,
+    });
+  }
+};
+const createPredio = async (req, res) => {
+  const { name, description, lat, lon, administrador_id } = req.body;
+  const { filename } = req.file;
+  console.log(__dirname);
+  const video = `${__dirname}/../storage/${filename}`;
+  console.log(video);
+
+  try {
+    const result = await cloudinary.uploader.upload(video, {
+      resource_type: "video",
+      folder: "video",
+    });
+    console.log("este es el resultado:", result);
+    const { secure_url: url } = result;
+    const [rows] = await pool.query(
+      `INSERT INTO predio (name, description, url360, lat, lon, administrador_id) VALUES (?, ?, ?, ?, ?, ?)`,
+      [name, description, url, lat, lon, administrador_id]
+    );
+    res.status(201);
+    res.send({
+      id: rows.insertId,
+      name,
+      description,
+      url,
+      lat,
+      lon,
+      administrador_id,
+      msg: "El predio se creo correctamente.",
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(404);
+    res.send({
+      error: error,
+      msg: "Ocurrio un error en la creación del predio.",
+    });
+  }
+};
+const updatePredio = async (req, res) => {
+  const id = req.params.id;
+  const { name, lat, lon, description, old_url } = req.body;
+  let url;
+  try {
+    if (req.file) {
+      const { filename } = req.file;
+      const image = `${__dirname}/../storage/${filename}`;
+      const result = await cloudinary.uploader.upload(image, {
+        resource_type: "video",
+        folder: "video",
+      });
+      const { secure_url } = result;
+      url = secure_url;
+    } else {
+      url = old_url;
+    }
+    const [rows] = await pool.query(
+      `UPDATE predio SET name=?, url360=?, description=?, lat=?, lon=? WHERE id=?`,
+      [name, url, description, lat, lon, id]
+    );
+    res.status(201);
+    res.send({
+      id,
+      url,
+      description,
+      name,
+      lat,
+      lon,
+    });
+  } catch (error) {
+    res.status(404);
+    res.send({
+      msg: "Ocurrio un error en la modificación.",
+      error,
+    });
+  }
+};
+const deletePredio = async (req, res) => {
+  try {
+    const id = req.params.id;
+    const [rows] = await pool.query(`DELETE FROM predio WHERE id=?`, [id]);
+    res.status(200);
+    res.send({
+      id,
+      msg: "Se elimino el predio correctamente.",
+    });
+  } catch (error) {
+    res.send({
+      msg: "Ocurrio un error en la eliminación.",
+      error,
+    });
+  }
 };
 
 module.exports = {
-  getItem,
-  getItems,
-  deleteItem,
-  createItem,
-  updateItem,
-  uploadImage,
-  uploadVideos,
+  getPredios,
+  getPrediosWithImages,
+  getPredioWithImages,
+  getPredio,
+  deletePredio,
+  createPredio,
+  updatePredio,
 };
