@@ -20,15 +20,17 @@ const createTrans = () => {
   });
   return transport;
 };
-const sendMail = async (email) => {
+const sendMail = async (email, user, password, firstname) => {
+  console.log(email, user, password, firstname);
   const transporter = createTrans();
   const info = await transporter.sendMail({
     from: "77fer1997@gmail.com",
     to: `${email}`,
     subject: `Bienvenido ${email}`,
-    html: "<h1>Hello world?</h1>",
+    html: `<h3>Hola ${firstname} </h3><p>Tu usuario es ${user}</p><p>Tu contraseña es ${password} `,
   });
   console.log("Message sent: %s", info.messageId);
 };
 
-exports.sendMail = (email) => sendMail(email);
+exports.sendMail = (email, user, password, firstname) =>
+  sendMail(email, user, password, firstname);

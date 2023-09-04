@@ -30,7 +30,8 @@ const createAdministrador = async (req, res) => {
       `INSERT INTO administrador (name, lastnames, email, user, password) VALUES (?, ?, ?, ?, ?)`,
       [name, lastnames, email, user, passwordHash]
     );
-    await emailer.sendMail(email);
+    console.log(user, password, name);
+    await emailer.sendMail(email, user, password, name);
     res.status(201);
     res.send({
       id: rows.insertId,
