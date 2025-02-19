@@ -58,6 +58,7 @@ INSERT INTO administrador (name, lastnames, email, user, password) VALUES ('Beto
 INSERT INTO vendedor (name, lastname, email, telefono,user, password, fecha_inicio, fecha_end, predio_id) VALUES ('Patricio', 'Parodi', 'patricio@gmail.com', "954774714", "patri123", "patri", "2023-08-23", "2023-09-23", 8 );
 INSERT INTO predio (name, lat, lon, administrador_id, url360) VALUES ('Las fosas', '12313123', '523532523', 1);
 INSERT INTO vendedor (name, lastname, email, telefono,user, password, fecha_inicio, fecha_end, predio_id) VALUES ('Patricio', 'Parodi', 'patricio@gmail.com', "954774714", "fernando123", "patri", "2023-08-23", "2023-09-23", 8 );
+/* Vendedores */
 SELECT 
 vendedor.id, 
 vendedor.name, 
@@ -68,7 +69,40 @@ vendedor.fecha_inicio,
 vendedor.fecha_end, 
 predio.name as predio_name,
 predio.id as predio_id
-FROM vendedor inner JOIN predio ON predio.id = vendedor.predio_id 
+FROM vendedor inner JOIN predio ON predio.id = vendedor.predio_id
+
+SELECT 
+    vendedor.id, 
+    vendedor.name, 
+    vendedor.lastname, 
+    vendedor.email, 
+    vendedor.telefono, 
+    vendedor.fecha_inicio, 
+    vendedor.fecha_end, 
+    predio.name as predio_name,
+    predio.id as predio_id
+    FROM vendedor inner JOIN predio ON predio.id = vendedor.predio_id WHERE vendedor.id = 1
+/* Administrador */
+SELECT * FROM administrador 
+SELECT * FROM administrador WHERE id = 1
+/* Productos */
+SELECT * FROM productos
+SELECT * FROM productos WHERE id = 1
+SELECT 
+    productos.id,
+    productos.name,
+    productos.description,
+    productos.price,
+    productos.imagen,
+    predio.id as predio_id
+    FROM productos inner JOIN vendedor ON productos.vendedor_id = vendedor.id inner JOIN predio ON vendedor.predio_id = predio.id WHERE predio.id = 1
+/* Predios */
+SELECT * FROM predio
+SELECT * FROM predio_images
+SELECT * FROM predio_images WHERE predio_id=1
+SELECT * FROM predio WHERE id = 1
+SELECT * FROM predio_url_videos WHERE predio_id = 1
+SELECT * FROM predio_url_videos WHERE id = 1 AND predio_id = 1
 MySQL Scheduled Event
 
 

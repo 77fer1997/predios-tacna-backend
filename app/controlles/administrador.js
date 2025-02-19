@@ -30,7 +30,6 @@ const createAdministrador = async (req, res) => {
       `INSERT INTO administrador (name, lastnames, email, user, password) VALUES (?, ?, ?, ?, ?)`,
       [name, lastnames, email, user, passwordHash]
     );
-    console.log(user, password, name);
     await emailer.sendMail(email, user, password, name);
     res.status(201);
     res.send({
@@ -54,7 +53,6 @@ const updateAdministrador = async (req, res) => {
   try {
     const id = req.params.id;
     const { name, lastnames, email } = req.body;
-    console.log(name, lastnames, email);
     const [rows] = await pool.query(
       `UPDATE administrador SET name = ?, lastnames = ?, email = ? WHERE id = ?`,
       [name, lastnames, email, id]

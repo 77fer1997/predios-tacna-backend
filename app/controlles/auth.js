@@ -19,7 +19,6 @@ const login = async (req, res) => {
       const checkPassword = await compare(password, passwordRow);
       if (checkPassword) {
         const token = tokenSign(id, name, lastnames, email, type_user);
-        console.log(token);
         res.status(200);
         res.send({
           id,
@@ -59,7 +58,6 @@ const login = async (req, res) => {
       const checkPassword = await compare(password, passwordRow);
       if (checkPassword) {
         const token = tokenSign(id, name, lastname, email, type_user);
-        console.log(token);
         res.status(200);
         res.send({
           id,

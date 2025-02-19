@@ -3,8 +3,7 @@ const { cloudinary, options } = require("../../config/cloudinary");
 const pool = require("../../config/mysql");
 const getPredios = async (req, res) => {
   try {
-    const [rows] = await pool.query(`SELECT * FROM predio`);
-    console.log(rows);
+    const [rows] = await pool.query(`SELECT * FROM predio`);;
     res.status(200);
     res.send(rows);
   } catch (error) {
@@ -27,14 +26,11 @@ const getPrediosWithImages = async (req, res) => {
     rows.forEach((predio, index) => {
       rows_predios_images.forEach((predioImage) => {
         if (predio.id === predioImage.predio_id) {
-          console.log(predio.id, predioImage.predio_id);
           if (array[index].imagen) {
             array[index].imagen = [...array[index].imagen, predioImage.url];
           } else {
             array[index].imagen = [predioImage.url];
           }
-
-          /* console.log(array[index].id); */
         }
       });
     });
@@ -87,16 +83,13 @@ const getPredio = async (req, res) => {
 const createPredio = async (req, res) => {
   const { name, description, lat, lon, administrador_id } = req.body;
   const { filename } = req.file;
-  console.log(__dirname);
   const video = `${__dirname}/../storage/${filename}`;
-  console.log(video);
 
   try {
     const result = await cloudinary.uploader.upload(video, {
       resource_type: "video",
       folder: "video",
     });
-    console.log("este es el resultado:", result);
     const { secure_url: url } = result;
     const [rows] = await pool.query(
       `INSERT INTO predio (name, description, url360, lat, lon, administrador_id) VALUES (?, ?, ?, ?, ?, ?)`,
